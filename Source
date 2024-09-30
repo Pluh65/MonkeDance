@@ -1,0 +1,74 @@
+using System;
+using BepInEx;
+using GorillaLocomotion;
+using GorillaNetworking;
+using Photon.Pun;
+using TMPro;
+using UnityEngine;
+
+namespace MonkeDance
+{ 
+	[BepInPlugin("com.Monke.Dance", "MonkeDance", "1.4.0")]
+	public class Mod : BaseUnityPlugin
+	{ 
+		private void Start()
+		{
+			this.OnGameInitialized();
+		}
+ 
+		private void Update()
+		{
+			Mod.CoolIt = 5f;
+			if (Time.time > Mod.CoolIt + Mod.CoolItTimer)
+			{
+				Mod.CoolItTimer = Time.time;
+				if (Mod.Monke == null && CosmeticsController.instance.v2_isCosmeticPlayFabCatalogDataLoaded && (CosmeticsV2Spawner_Dirty.startedAllPartsInstantiated || CosmeticsV2Spawner_Dirty.allPartsInstantiated))
+				{
+					Mod.Monke = UnityEngine.Object.Instantiate<GameObject>(GameObject.Find("Player Objects/Local VRRig/Local Gorilla Player"), new Vector3(-65.236f, 12.4296f, -79.4826f), Player.Instance.transform.rotation);
+					this.game = UnityEngine.Object.Instantiate<GameObject>(GameObject.Find("Player Objects/Player VR Controller/GorillaPlayer/TurnParent/Main Camera"), Mod.Monke.GetComponent<VRRig>().headMesh.transform);
+					this.game.transform.position += Mod.Monke.GetComponent<VRRig>().headMesh.transform.forward * 0.15f;
+					this.game.transform.position += new Vector3(0f, 0.15f, 0f);
+				}
+			}
+			VRRig component = Mod.Monke.GetComponent<VRRig>();
+			Mod.Monke.name = "silly";
+			Mod.Monke.gameObject.name = "silly";
+			Mod.Monke.transform.LookAt(Player.Instance.headCollider.transform);
+			GameObject.Find("silly").transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+			component.enabled = false;
+			this.game.transform.rotation = Mod.Monke.GetComponent<VRRig>().headMesh.transform.rotation;
+			Vector3 b = GameObject.Find("Environment Objects/LocalObjects_Prefab/TreeRoom/TreeRoomInteractables/GorillaComputerObject/ComputerUI/monitor/monitorScreen").transform.right * (Mathf.Cos((float)Time.frameCount / 30f) * 0.1f) + new Vector3(0f, Mathf.Abs(Mathf.Sin((float)Time.frameCount / 30f) * 0.1f), 0f);
+			component.transform.position = GameObject.Find("Environment Objects/LocalObjects_Prefab/TreeRoom/TreeRoomInteractables/GorillaComputerObject/ComputerUI/monitor/monitorScreen").transform.position + new Vector3(0f, 0.75f, 0f) + b;
+			component.leftHand.rigTarget.transform.position = component.transform.position + component.transform.forward * 0.2f + component.transform.right * -0.4f + GorillaTagger.Instance.offlineVRRig.transform.up * (0.3f + Mathf.Sin((float)Time.frameCount / 30f) * 0.2f);
+			component.rightHand.rigTarget.transform.position = component.transform.position + Mod.Monke.transform.forward * 0.2f + component.transform.right * 0.4f + component.transform.up * (0.3f + Mathf.Sin((float)Time.frameCount / 30f) * -0.2f);
+			component.leftHand.rigTarget.transform.rotation = component.transform.rotation;
+			component.rightHand.rigTarget.transform.rotation = component.transform.rotation;
+			this.game.GetComponent<Camera>().enabled = false;
+			GameObject.Find("silly/RigAnchor/rig/body/head/sigma").GetComponent<Camera>().enabled = false;
+			GameObject.Find("silly/RigAnchor/rig/NameTagAnchor/NameTagCanvas/Text Inner").GetComponent<TextMeshPro>().text = PhotonNetwork.LocalPlayer.NickName;
+			GameObject.Find("silly/RigAnchor/rig/NameTagAnchor/NameTagCanvas/Text Outer").GetComponent<TextMeshPro>().text = PhotonNetwork.LocalPlayer.NickName;
+			Mod.Monke.transform.Find("VR Constraints/LeftArm/Left Arm IK/SlideAudio").gameObject.SetActive(false);
+			Mod.Monke.transform.Find("VR Constraints/RightArm/Right Arm IK/SlideAudio").gameObject.SetActive(false);
+		}
+ 
+		public Mod()
+		{
+		}
+
+ 
+ 
+		private void OnGameInitialized()
+		{
+		}
+ 
+		public static volatile Mod instance;
+ 
+		private static float CoolIt;
+ 
+		private static float CoolItTimer;
+ 
+		private GameObject game;
+ 
+		private static GameObject Monke;
+	}
+}
